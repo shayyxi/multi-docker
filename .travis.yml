@@ -1,0 +1,22 @@
+language: generic 
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t shazi986/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true shazi986/react-test npm test
+
+after_success:
+  - docker build -t shazi986/multi-client ./client
+  - docker build -t shazi986/multi-nginx ./nginx
+  - docker build -t shazi986/multi-server ./server
+  - docker build -t shazi986/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push shazi986/multi-client
+  - docker push shazi986/multi-nginx
+  - docker push shazi986/multi-server
+  - docker push shazi986/multi-worker
